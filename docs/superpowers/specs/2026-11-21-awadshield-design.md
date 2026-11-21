@@ -302,15 +302,23 @@ un système sont isolées derrière des interfaces claires côté Gardien.
   de passe parents = coffre perdu par conception.
 
 ## 7. Choix techniques
-- **C# / .NET** pour le serveur et le Gardien (naturel pour un service Windows,
-  fonctionne aussi sur macOS/Linux et Docker pour la suite).
+- **Serveur + tableau de bord : Node.js / TypeScript** (serveur web + SQLite,
+  tableau de bord React servi par le serveur). Testable intégralement en
+  développement, tourne sur Windows, Linux et macOS. *Révision du choix initial
+  « tout en .NET » : l'environnement de développement ne permet pas de compiler
+  .NET, et un serveur Node est plus simple à tester et à porter.*
+- **Gardien : .NET / C#** (service Windows + agent de session). Fonctions natives
+  Windows indispensables (service, capture, UI Automation, DPAPI, lecture des
+  mots de passe des navigateurs). .NET fournit un exécutable autonome, pratique à
+  installer pour un parent, et se portera plus tard sur Linux/macOS.
+- Les deux ne partagent pas de code : ils communiquent par l'**API commune**
+  (HTTP + JSON). C'est aussi ce qui rend l'ajout d'autres systèmes peu coûteux.
 - **SQLite** (un fichier).
-- **Tableau de bord** en application web (React) servie par le serveur, pensée
-  mobile (PWA, utile pour la notification).
+- Tableau de bord pensé mobile (PWA, utile pour la notification).
 - **HTTPS** sur Tailscale ; le Gardien interroge toutes les minutes, envoie les
   captures au fil de l'eau.
 - **Installateurs** : un serveur, un Gardien.
-- Code dans `ITLearner-0/AwadShield`.
+- Code dans `ITLearner-0/AwladShield`.
 
 ## 8. Cadre légal (information)
 En France, des parents peuvent surveiller l'ordinateur de leurs enfants mineurs
