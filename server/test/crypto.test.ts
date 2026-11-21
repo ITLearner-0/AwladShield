@@ -5,6 +5,7 @@ import {
   generateTotpSecret,
   hashBackupCode,
   hashPassword,
+  verifyBackupCode,
   otpauthUrl,
   verifyPassword,
   verifyTotp,
@@ -25,7 +26,18 @@ test("TOTP: un jeton courant est accepté", () => {
   const s = generateTotpSecret();
   const token = authenticator.generate(s);
   expect(verifyTotp(s, token)).toBe(true);
-  expect(verifyTotp(s, "000000")).toBe(false);
+  const last = token[token.length - 1];
+  const wrong = token.slice(0, -1) + (last === "0" ? "1" : "0");
+  expect(verifyTotp(s, wrong)).toBe(false);
+});
+
+test("TOTP: jeton du pas précédent accepté, deux pas d'écart refusé", () => {
+  const s = generateTotpSecret();
+  const at = (offsetSteps: number) =>
+    authenticator.clone({ epoch: Date.now() + offsetSteps * 30_000 }).generate(s);
+  expect(verifyTotp(s, at(-1))).toBe(true);
+  expect(verifyTotp(s, at(-2))).toBe(false);
+  expect(verifyTotp(s, at(2))).toBe(false);
 });
 
 test("otpauthUrl contient l'émetteur AwladShield", () => {
@@ -42,4 +54,13 @@ test("10 codes de secours, uniques, hachage vérifiable", () => {
   expect(hashBackupCode(codes[0])).toBe(hashBackupCode(codes[0]));
   expect(hashBackupCode(codes[0])).toMatch(/^[0-9a-f]{64}$/);
   expect(hashBackupCode(codes[0])).not.toBe(hashBackupCode(codes[1]));
+});
+
+test("verifyBackupCode: insensible à la casse, mauvais code refusé", () => {
+  const [c0, c1] = generateBackupCodes();
+  const stored = hashBackupCode(c0);
+  expect(verifyBackupCode(c0, stored)).toBe(true);
+  expect(verifyBackupCode(` ${c0.toLowerCase()} `, stored)).toBe(true);
+  expect(verifyBackupCode(c1, stored)).toBe(false);
+  expect(verifyBackupCode(c0, "abc")).toBe(false);
 });
