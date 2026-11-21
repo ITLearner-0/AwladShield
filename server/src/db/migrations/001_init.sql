@@ -1,0 +1,1 @@
+-- 001_init: base vide. Les tables arrivent via les migrations suivantes.
