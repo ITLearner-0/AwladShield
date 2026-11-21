@@ -16,6 +16,8 @@ export async function parentsRoutes(app: FastifyInstance): Promise<void> {
     return { parentId: r.id, otpauthUrl: r.otpauthUrl, backupCodes: r.backupCodes };
   };
 
+  app.get("/api/setup/status", async () => ({ needsSetup: countParents(app.db) === 0 }));
+
   app.post("/api/setup", async (req, reply) => {
     const body = newParentBody.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: "invalid_body" });

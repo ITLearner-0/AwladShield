@@ -1,6 +1,10 @@
 node_modules/
 server/node_modules/
 server/dist/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/test-results/
+dashboard/playwright-report/
 *.db
 *.db-journal
 *.db-wal
@@ -8,3 +12,4 @@ server/dist/
 
 # SDD execution workspace (scratch, never pushed)
 .superpowers/
+*.tsbuildinfo

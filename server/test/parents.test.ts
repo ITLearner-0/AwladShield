@@ -26,6 +26,15 @@ test("premier /api/setup crée le parent et renvoie l'enrôlement TOTP", async (
   expect(res.json().parentId).toBeTruthy();
 });
 
+test("GET /api/setup/status renvoie needsSetup=true sans parent, false après setup", async () => {
+  const before = await app.inject({ method: "GET", url: "/api/setup/status" });
+  expect(before.statusCode).toBe(200);
+  expect(before.json()).toEqual({ needsSetup: true });
+  await setup();
+  const after = await app.inject({ method: "GET", url: "/api/setup/status" });
+  expect(after.json()).toEqual({ needsSetup: false });
+});
+
 test("un deuxième /api/setup est refusé (409)", async () => {
   await setup();
   const res = await setup("p2@x.fr");
