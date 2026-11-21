@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { DatabaseType } from "./db/connection.js";
 import { authRoutes } from "./auth/auth.routes.js";
 import { parentsRoutes } from "./parents/parents.routes.js";
+import { childrenRoutes } from "./children/children.routes.js";
 
 export function buildApp(db: DatabaseType): FastifyInstance {
   const app = Fastify();
@@ -11,6 +12,7 @@ export function buildApp(db: DatabaseType): FastifyInstance {
   app.register(cookie);
   app.register(authRoutes);
   app.register(parentsRoutes);
+  app.register(childrenRoutes);
   return app;
 }
 
