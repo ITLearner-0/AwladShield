@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { requireParent } from "../auth/require-parent.js";
 import { confirmTotp, countParents, createParent, getParentByEmail } from "./parents.repo.js";
 
 const newParentBody = z.object({
@@ -31,11 +32,18 @@ export async function parentsRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true };
   });
 
-  // TODO(Task 4): protect with requireParent
-  app.post("/api/parents", async (req, reply) => {
+  app.post("/api/parents", { preHandler: requireParent }, async (req, reply) => {
     const body = newParentBody.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: "invalid_body" });
     if (getParentByEmail(app.db, body.data.email)) return reply.code(409).send({ error: "email_taken" });
-    return reply.code(201).send(await enroll(body.data));
+    try {
+      return reply.code(201).send(await enroll(body.data));
+    } catch (e) {
+      // course entre le contrôle et l'insertion : la contrainte UNIQUE tranche
+      if ((e as { code?: string }).code === "SQLITE_CONSTRAINT_UNIQUE") {
+        return reply.code(409).send({ error: "email_taken" });
+      }
+      throw e;
+    }
   });
 }
