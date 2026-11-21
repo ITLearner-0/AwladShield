@@ -5,8 +5,8 @@ import { confirmTotp, countParents, createParent, getParentByEmail } from "./par
 
 const newParentBody = z.object({
   email: z.email(),
-  displayName: z.string().min(1),
-  password: z.string().min(1),
+  displayName: z.string().trim().min(1).max(100),
+  password: z.string().min(10),
 });
 const confirmBody = z.object({ parentId: z.string().min(1), token: z.string().min(1) });
 
@@ -22,7 +22,7 @@ export async function parentsRoutes(app: FastifyInstance): Promise<void> {
     const body = newParentBody.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: "invalid_body" });
     if (countParents(app.db) > 0) return reply.code(409).send({ error: "already_setup" });
-    return reply.code(201).send(await enroll(body.data));
+    return reply.header("Cache-Control", "no-store").code(201).send(await enroll(body.data));
   });
 
   app.post("/api/setup/confirm", async (req, reply) => {
@@ -39,7 +39,7 @@ export async function parentsRoutes(app: FastifyInstance): Promise<void> {
     if (!body.success) return reply.code(400).send({ error: "invalid_body" });
     if (getParentByEmail(app.db, body.data.email)) return reply.code(409).send({ error: "email_taken" });
     try {
-      return reply.code(201).send(await enroll(body.data));
+      return reply.header("Cache-Control", "no-store").code(201).send(await enroll(body.data));
     } catch (e) {
       // course entre le contrôle et l'insertion : la contrainte UNIQUE tranche
       if ((e as { code?: string }).code === "SQLITE_CONSTRAINT_UNIQUE") {

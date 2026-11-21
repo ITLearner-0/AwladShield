@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomInt, randomUUID } from "node:crypto";
 import type { DatabaseType } from "../db/connection.js";
+import { hashDeviceToken } from "./token.js";
 
 export const PAIRING_TTL_MS = 15 * 60_000;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I, O, 0, 1
@@ -62,7 +63,7 @@ export function claimPairingCode(
     const deviceId = randomUUID();
     const deviceToken = randomBytes(32).toString("hex");
     db.prepare("INSERT INTO devices (id, child_id, name, os, token_hash) VALUES (?, ?, ?, ?, ?)")
-      .run(deviceId, row.child_id, row.device_name || input.hostname, input.os, sha256(deviceToken));
+      .run(deviceId, row.child_id, row.device_name || input.hostname, input.os, hashDeviceToken(deviceToken));
     return { ok: true, deviceId, deviceToken };
   });
   return tx();

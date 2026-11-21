@@ -55,6 +55,17 @@ test("un code valide crée un appareil et renvoie un jeton (haché en base)", as
   expect(dev.token_hash).not.toBe(deviceToken);
 });
 
+test("les réponses à secret unique sont en Cache-Control: no-store", async () => {
+  const created = await authed("POST", "/api/pairing/code", { childId, deviceName: "PC-Sara" });
+  expect(created.headers["cache-control"]).toBe("no-store");
+  const r = await claim(created.json().code);
+  expect(r.headers["cache-control"]).toBe("no-store");
+});
+
+test("deviceName blanc refusé (400)", async () => {
+  expect((await authed("POST", "/api/pairing/code", { childId, deviceName: "   " })).statusCode).toBe(400);
+});
+
 test("réclamer deux fois le même code → 409", async () => {
   const { code } = await newCode();
   expect((await claim(code)).statusCode).toBe(200);

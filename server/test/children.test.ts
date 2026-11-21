@@ -45,6 +45,14 @@ test("displayName vide refusé (400)", async () => {
   expect(r.statusCode).toBe(400);
 });
 
+test("displayName blanc refusé (400), espaces autour retirés", async () => {
+  expect((await authed("POST", "/api/children", { displayName: "   ", ageBand: "7-10" })).statusCode).toBe(400);
+  const c = await authed("POST", "/api/children", { displayName: "  Sara  ", ageBand: "7-10" });
+  expect(c.statusCode).toBe(201);
+  const list = await authed("GET", "/api/children");
+  expect(list.json()).toContainEqual({ id: c.json().id, displayName: "Sara", ageBand: "7-10" });
+});
+
 test("GET /api/children sans session → 401", async () => {
   expect((await app.inject({ method: "GET", url: "/api/children" })).statusCode).toBe(401);
 });

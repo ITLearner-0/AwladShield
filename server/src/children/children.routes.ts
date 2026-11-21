@@ -4,7 +4,7 @@ import { requireParent } from "../auth/require-parent.js";
 import { createChild, listChildren } from "./children.repo.js";
 
 const newChildBody = z.object({
-  displayName: z.string().min(1),
+  displayName: z.string().trim().min(1).max(100),
   ageBand: z.enum(["7-10", "11-14", "15-17"]),
 });
 

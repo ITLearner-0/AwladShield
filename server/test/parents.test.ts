@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 const setup = (email = "p1@x.fr") =>
-  app.inject({ method: "POST", url: "/api/setup", payload: { email, displayName: "Parent 1", password: "s3cret!" } });
+  app.inject({ method: "POST", url: "/api/setup", payload: { email, displayName: "Parent 1", password: "s3cret!pass" } });
 
 test("premier /api/setup crée le parent et renvoie l'enrôlement TOTP", async () => {
   const res = await setup();
@@ -44,6 +44,24 @@ test("un deuxième /api/setup est refusé (409)", async () => {
 test("/api/setup valide le corps (400)", async () => {
   const res = await app.inject({ method: "POST", url: "/api/setup", payload: { email: "pas-un-email" } });
   expect(res.statusCode).toBe(400);
+});
+
+test("/api/setup refuse un mot de passe de 9 caractères (400)", async () => {
+  const res = await app.inject({
+    method: "POST", url: "/api/setup",
+    payload: { email: "p1@x.fr", displayName: "Parent 1", password: "123456789" },
+  });
+  expect(res.statusCode).toBe(400);
+});
+
+test("/api/setup refuse un nom blanc (400) et les réponses de secrets sont no-store", async () => {
+  const blank = await app.inject({
+    method: "POST", url: "/api/setup",
+    payload: { email: "p1@x.fr", displayName: "   ", password: "s3cret!pass" },
+  });
+  expect(blank.statusCode).toBe(400);
+  const ok = await setup();
+  expect(ok.headers["cache-control"]).toBe("no-store");
 });
 
 test("/api/setup/confirm active le TOTP avec un bon jeton, refuse un mauvais", async () => {

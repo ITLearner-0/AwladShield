@@ -56,6 +56,7 @@ export function hashBackupCode(code: string): string {
   return createHash("sha256").update(normalizeBackupCode(code)).digest("hex");
 }
 
+// Used by the étape-4 backup-code recovery flow; intentionally not wired yet.
 export function verifyBackupCode(code: string, storedHash: string): boolean {
   const a = Buffer.from(hashBackupCode(code), "hex");
   const b = Buffer.from(storedHash, "hex");
