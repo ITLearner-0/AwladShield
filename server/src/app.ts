@@ -5,6 +5,7 @@ import { authRoutes } from "./auth/auth.routes.js";
 import { parentsRoutes } from "./parents/parents.routes.js";
 import { childrenRoutes } from "./children/children.routes.js";
 import { pairingRoutes } from "./devices/pairing.routes.js";
+import { devicesRoutes } from "./devices/devices.routes.js";
 
 export function buildApp(db: DatabaseType): FastifyInstance {
   const app = Fastify();
@@ -15,6 +16,7 @@ export function buildApp(db: DatabaseType): FastifyInstance {
   app.register(parentsRoutes);
   app.register(childrenRoutes);
   app.register(pairingRoutes);
+  app.register(devicesRoutes);
   return app;
 }
 
